@@ -74,17 +74,28 @@ def _cache_put(hash: str, result: Any) -> None:
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log method, path, status code, and response time for every HTTP request."""
+    """Log method, path, status code, and response time for every HTTP request.
+
+    Propagates an incoming ``X-Request-ID`` header (for distributed tracing) or
+    generates a short one when absent so each request is correlated in logs.
+    """
+    import uuid
+
+    request_id = request.headers.get(
+        "X-Request-ID", uuid.uuid4().hex[:8]
+    )
     start = time.perf_counter()
     response = await call_next(request)
     elapsed_ms = (time.perf_counter() - start) * 1000
     logger.info(
-        "%s %s -> %d (%.1fms)",
+        "%s %s -> %d (%.1fms) req=%s",
         request.method,
         request.url.path,
         response.status_code,
         elapsed_ms,
+        request_id,
     )
+    response.headers["X-Request-ID"] = request_id
     return response
 
 
