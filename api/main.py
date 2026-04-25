@@ -616,3 +616,25 @@ def _discover_configs() -> dict[str, dict]:
         except Exception:
             continue
     return configs
+
+
+# ---------------------------------------------------------------------------
+# Static frontend (production single-binary deployment)
+# ---------------------------------------------------------------------------
+# When a production build of the React dashboard exists, serve it directly from
+# the API so the whole app works behind a single port. All non-API routes fall
+# back to index.html for client-side routing.
+_DIST = ROOT / "web" / "dist"
+if _DIST.is_dir():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa(full_path: str):
+        from fastapi.responses import FileResponse
+
+        candidate = _DIST / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_DIST / "index.html")
