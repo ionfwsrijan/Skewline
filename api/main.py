@@ -54,12 +54,17 @@ app.add_middleware(
 # LRU cache of simulation results keyed by config_hash.
 _RESULT_CACHE: dict[str, tuple[float, Any]] = {}
 _CACHE_MAX = 32
+_CACHE_HITS = 0
+_CACHE_MISSES = 0
 
 
 def _cache_get(hash: str) -> Any | None:
+    global _CACHE_HITS, _CACHE_MISSES
     entry = _RESULT_CACHE.get(hash)
     if entry is None:
+        _CACHE_MISSES += 1
         return None
+    _CACHE_HITS += 1
     _RESULT_CACHE[hash] = entry  # touch for LRU recency
     return entry
 
@@ -214,6 +219,14 @@ class RootResponse(BaseModel):
     endpoints: list[str]
 
 
+class MetaResponse(BaseModel):
+    version: str
+    app: str
+    python: str
+    configs: list[str]
+    features: list[str]
+
+
 class BinanceCompareRequest(BaseModel):
     """Request to compare simulation output against real Binance data."""
     symbol: str = Field(
@@ -296,6 +309,30 @@ def health_check():
 
 
 @app.get(
+    "/api/meta",
+    response_model=MetaResponse,
+    tags=["System"],
+    summary="API capabilities and environment",
+)
+def api_meta():
+    """Return version, Python runtime, available configs, and feature flags."""
+    return MetaResponse(
+        version="1.1.0",
+        app=app.title,
+        python=sys.version.split()[0],
+        configs=sorted(_discover_configs().keys()),
+        features=[
+            "simulation",
+            "monte-carlo",
+            "ml-agents",
+            "stress-tests",
+            "cache",
+            "websocket",
+        ],
+    )
+
+
+@app.get(
     "/api/cache",
     response_model=dict[str, Any],
     tags=["System"],
@@ -303,9 +340,13 @@ def health_check():
 )
 def cache_stats():
     """Return current in-memory simulation result cache statistics."""
+    total = _CACHE_HITS + _CACHE_MISSES
     return {
         "size": len(_RESULT_CACHE),
         "max_size": _CACHE_MAX,
+        "hits": _CACHE_HITS,
+        "misses": _CACHE_MISSES,
+        "hit_rate": round(_CACHE_HITS / total, 4) if total else 0.0,
         "keys": sorted(_RESULT_CACHE.keys()),
     }
 
@@ -317,7 +358,10 @@ def cache_stats():
 )
 def clear_cache():
     """Clear all cached simulation results."""
+    global _CACHE_HITS, _CACHE_MISSES
     _RESULT_CACHE.clear()
+    _CACHE_HITS = 0
+    _CACHE_MISSES = 0
     return {"cleared": True}
 
 
