@@ -11,6 +11,7 @@ import { Activity, AlertCircle, Zap, Menu } from "lucide-react";
 import { useTheme } from "./hooks/useTheme";
 import { useSimulationHistory } from "./hooks/useSimulationHistory";
 import ThemeToggle from "./components/ThemeToggle";
+import ServerStatus from "./components/ServerStatus";
 import { Clock, Trash2 } from "lucide-react";
 
 const OverviewTab = lazy(() => import("./components/OverviewTab"));
@@ -327,6 +328,8 @@ export default function App() {
                     </Suspense>
                   </motion.div>
                 </AnimatePresence>
+
+                <ServerStatus />
               </motion.div>
             ) : (
               <motion.div

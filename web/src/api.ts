@@ -10,6 +10,35 @@ export async function fetchConfigs(): Promise<
   return res.json();
 }
 
+export interface ApiMeta {
+  version: string;
+  app: string;
+  python: string;
+  configs: string[];
+  features: string[];
+}
+
+export interface CacheStats {
+  size: number;
+  max_size: number;
+  hits: number;
+  misses: number;
+  hit_rate: number;
+  keys: string[];
+}
+
+export async function fetchMeta(): Promise<ApiMeta> {
+  const res = await fetch(`${API_BASE}/meta`);
+  if (!res.ok) throw new Error("Failed to fetch API metadata");
+  return res.json();
+}
+
+export async function fetchCacheStats(): Promise<CacheStats> {
+  const res = await fetch(`${API_BASE}/cache`);
+  if (!res.ok) throw new Error("Failed to fetch cache stats");
+  return res.json();
+}
+
 export async function runSimulation(
   config: SimulationConfig
 ): Promise<SimulationResult> {
