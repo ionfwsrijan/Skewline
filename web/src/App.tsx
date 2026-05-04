@@ -127,6 +127,16 @@ export default function App() {
     return () => { wsRef.current?.close(); };
   }, []);
 
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!loading) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [loading]);
+
   const handleConfigChange = useCallback(
     (name: string) => {
       setSelectedConfig(name);
