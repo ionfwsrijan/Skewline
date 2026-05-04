@@ -53,6 +53,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [shortcutOpen, setShortcutOpen] = useState(false);
   const [wsProgress, setWsProgress] = useState<{ step: number; total: number } | null>(null);
+  const [elapsedSec, setElapsedSec] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { history, addEntry, clearHistory } = useSimulationHistory();
@@ -135,6 +136,16 @@ export default function App() {
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!loading) {
+      setElapsedSec(0);
+      return;
+    }
+    const start = Date.now();
+    const timer = setInterval(() => setElapsedSec(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(timer);
   }, [loading]);
 
   const handleConfigChange = useCallback(
@@ -368,6 +379,9 @@ export default function App() {
                           {wsProgress
                             ? `Step ${wsProgress.step} / ${wsProgress.total}`
                             : `Processing ${config?.horizon_steps ?? "\u2026"} steps`}
+                          <span className="text-muted-foreground/50 font-mono ml-2" aria-live="polite">
+                            {String(Math.floor(elapsedSec / 60)).padStart(2, "0")}:{String(elapsedSec % 60).padStart(2, "0")}
+                          </span>
                         </p>
                       </div>
                       <div className="w-56 h-1.5 bg-muted rounded-full overflow-hidden">
