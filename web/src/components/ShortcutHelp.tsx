@@ -14,6 +14,7 @@ const shortcuts = [
   { keys: ["4"], desc: "Ledger tab" },
   { keys: ["5"], desc: "Compare tab" },
   { keys: ["D"], desc: "Toggle dark/light theme" },
+  { keys: ["R"], desc: "Re-run simulation" },
   { keys: ["?"], desc: "Show this help" },
   { keys: ["Esc"], desc: "Close modal / sidebar" },
 ];

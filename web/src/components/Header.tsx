@@ -1,6 +1,6 @@
 import type { SimulationResult } from "../types";
 import { motion } from "framer-motion";
-import { Download, Copy, Check } from "lucide-react";
+import { Download, Copy, Check, RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 interface HeaderProps {
@@ -8,9 +8,10 @@ interface HeaderProps {
   selectedConfig: string;
   onExport?: () => void;
   onShare?: () => void;
+  onRerun?: () => void;
 }
 
-export default function Header({ result, selectedConfig, onExport, onShare }: HeaderProps) {
+export default function Header({ result, selectedConfig, onExport, onShare, onRerun }: HeaderProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyJSON = async () => {
@@ -87,6 +88,16 @@ export default function Header({ result, selectedConfig, onExport, onShare }: He
               >
                 <Download className="w-3 h-3" />
                 Export
+              </button>
+            )}
+            {onRerun && (
+              <button
+                onClick={onRerun}
+                className="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-indigo-500/30 glass text-indigo-300 hover:text-indigo-200 hover:border-indigo-500/50 transition-colors"
+                title="Re-run with the current settings (R)"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Re-run
               </button>
             )}
             <button
