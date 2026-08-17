@@ -45,14 +45,14 @@ export default function App() {
     (path: string, value: number | boolean) => {
       setConfig((prev) => {
         if (!prev) return prev;
-        const next = JSON.parse(JSON.stringify(prev)) as SimulationConfig;
+        const next: Record<string, unknown> = JSON.parse(JSON.stringify(prev));
         const keys = path.split(".");
-        let obj: Record<string, unknown> = next;
+        let obj = next;
         for (let i = 0; i < keys.length - 1; i++) {
           obj = obj[keys[i]] as Record<string, unknown>;
         }
         obj[keys[keys.length - 1]] = value;
-        return next;
+        return next as unknown as SimulationConfig;
       });
     },
     []
