@@ -1,0 +1,7 @@
+base_config: configs/avellaneda_stoikov.yaml
+objective: sharpe
+maximize: true
+grid:
+  agent.gamma: [0.03, 0.06, 0.10]
+  agent.kappa: [1.0, 1.5]
+  risk.max_position: [30, 50]

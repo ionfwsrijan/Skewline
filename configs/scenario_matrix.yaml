@@ -1,0 +1,33 @@
+scenarios:
+  - name: baseline
+    overrides: {}
+  - name: high_latency
+    overrides:
+      latency:
+        quote_latency_steps: 5
+        jitter_steps: 3
+        spike_probability: 0.08
+        spike_steps: 12
+  - name: toxic_flow
+    overrides:
+      order_flow:
+        informed_intensity: 2.0
+      price_process:
+        jump_intensity: 0.06
+        jump_std: 0.02
+  - name: fee_shock
+    overrides:
+      fees:
+        maker_rebate_bps: 0.0
+        taker_fee_bps: 2.5
+  - name: liquidity_drought
+    overrides:
+      external_lob:
+        quantity: 4
+        levels: 2
+        half_spread_bps: 25.0
+  - name: jumpy_news
+    overrides:
+      price_process:
+        jump_intensity: 0.10
+        jump_std: 0.03

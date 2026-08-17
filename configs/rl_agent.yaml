@@ -1,0 +1,37 @@
+seed: 23
+horizon_steps: 1200
+dt: 0.01
+initial_price: 100.0
+price_process:
+  sigma: 0.18
+  drift: 0.0
+  jump_intensity: 0.02
+  jump_mean: 0.0
+  jump_std: 0.012
+order_flow:
+  noise_intensity: 5.0
+  informed_intensity: 0.6
+  max_market_order_size: 3
+latency:
+  quote_latency_steps: 2
+  jitter_steps: 1
+  spike_probability: 0.02
+  spike_steps: 5
+external_lob:
+  enabled: true
+  levels: 4
+  quantity: 15
+  half_spread_bps: 12.0
+  ttl_steps: 5
+fees:
+  maker_rebate_bps: 0.1
+  taker_fee_bps: 0.5
+risk:
+  max_position: 50
+  max_drawdown: 2500.0
+agent:
+  type: rl
+  epsilon: 0.05
+  alpha: 0.05
+  gamma_discount: 0.95
+  order_size: 1

@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mm-sim"
+version = "0.1.0"
+description = "Research-grade market making simulator with LOB microstructure, strategy zoo, risk controls, and experiment tracking."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Skewline" }]
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "pyyaml>=6.0",
+  "pyarrow>=12.0",
+  "matplotlib>=3.7",
+  "streamlit>=1.32",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "ruff>=0.4"]
+rl = ["stable-baselines3>=2.3", "gymnasium>=0.29"]
+
+[project.scripts]
+mm-sim = "cli:main"
+
+[tool.setuptools]
+py-modules = ["cli", "config"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
