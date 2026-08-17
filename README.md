@@ -1,8 +1,8 @@
-# MM Sim: Market Making Research Simulator
+# Skewline
 
-## Abstract
+## What it is
 
-MM Sim is a reproducible market-making research environment for comparing classical,
+Skewline is a reproducible market-making research environment for comparing classical,
 signal-driven, learned, and hedged quoting strategies under realistic microstructure
 constraints. The simulator combines calibrated jump-diffusion and correlated
 multi-asset price paths, a price-time-priority limit order book, stochastic noise and
