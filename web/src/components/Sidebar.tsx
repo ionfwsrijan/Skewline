@@ -8,6 +8,7 @@ interface SidebarProps {
   onParamChange: (path: string, value: number | boolean) => void;
   onRun: () => void;
   loading: boolean;
+  configsLoading: boolean;
 }
 
 function Slider({
@@ -52,6 +53,7 @@ export default function Sidebar({
   onParamChange,
   onRun,
   loading,
+  configsLoading,
 }: SidebarProps) {
   const agentType = config?.agent?.type ?? "";
   const hasBaseSpread = "base_spread_bps" in (config?.agent ?? {});
@@ -72,6 +74,11 @@ export default function Sidebar({
         <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1.5 block">
           Strategy
         </label>
+        {configsLoading ? (
+          <div className="w-full h-9 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md px-3 py-2 flex items-center">
+            <div className="w-4 h-4 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
         <select
           value={selectedConfig}
           onChange={(e) => onConfigChange(e.target.value)}
@@ -83,6 +90,7 @@ export default function Sidebar({
             </option>
           ))}
         </select>
+        )}
         {agentType && (
           <div className="mt-2 inline-flex items-center gap-1.5 bg-[var(--color-accent)]/10 text-[var(--color-accent)] text-xs font-medium px-2 py-0.5 rounded-full">
             <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
@@ -215,6 +223,9 @@ export default function Sidebar({
             "Run Simulation"
           )}
         </button>
+        <p className="text-[10px] text-[var(--color-text-dim)] text-center mt-2">
+          Ctrl+Enter
+        </p>
       </div>
     </aside>
   );
