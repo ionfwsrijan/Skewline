@@ -26,7 +26,9 @@ src/engine/              simulation loop, risk manager, fees
 src/metrics/             P&L decomposition, risk stats, validation helpers
 src/research/            Monte Carlo, reports, synthetic data, walk-forward tools
 src/experiment_tracking/ CSV and SQLite run logger
-dashboard/app.py          Streamlit interactive dashboard
+api/                      FastAPI REST backend for the React dashboard
+web/                       React + Tailwind CSS frontend dashboard
+dashboard/app.py           Streamlit interactive dashboard (legacy)
 tests/                    pytest coverage for matching, P&L, agents, risk, price process
 main.py                   CLI entry point
 ```
@@ -112,6 +114,14 @@ python main.py stress --config configs/baseline_naive.yaml --data data/raw/synth
 python main.py scenario-matrix --config configs/baseline_naive.yaml --scenarios configs/scenario_matrix.yaml
 python main.py optimize --spec configs/optimization_avellaneda.yaml
 streamlit run dashboard/app.py
+
+# React Dashboard (recommended)
+pip install fastapi uvicorn
+cd web && npm install
+# Terminal 1: API backend
+py -m uvicorn api.main:app --reload --port 8000
+# Terminal 2: React frontend
+cd web && npm run dev
 ```
 
 ## Current Results Template
