@@ -1,25 +1,39 @@
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+
 interface MetricCardProps {
   label: string;
   value: string;
   positive?: boolean;
+  delay?: number;
 }
 
-export default function MetricCard({ label, value, positive }: MetricCardProps) {
+export default function MetricCard({ label, value, positive, delay = 0 }: MetricCardProps) {
   const colorClass =
     positive === true
-      ? "text-[var(--color-green)]"
+      ? "gradient-text-green"
       : positive === false
-        ? "text-[var(--color-red)]"
-        : "text-[var(--color-text)]";
+        ? "gradient-text-red"
+        : "";
 
   return (
-    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg px-4 py-3 hover:border-[var(--color-border-focus)]/30 transition-colors">
-      <div className="text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay, ease: "easeOut" }}
+      className={cn(
+        "glass rounded-xl px-4 py-3.5 group hover:scale-[1.02] transition-all duration-200",
+        "hover:shadow-lg hover:shadow-primary/5",
+        positive === true && "hover:shadow-emerald-500/10",
+        positive === false && "hover:shadow-red-500/10",
+      )}
+    >
+      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">
         {label}
       </div>
-      <div className={`text-lg font-bold font-mono ${colorClass}`}>
+      <div className={cn("text-lg font-bold font-mono tabular-nums", colorClass)}>
         {value}
       </div>
-    </div>
+    </motion.div>
   );
 }

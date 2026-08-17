@@ -1,12 +1,15 @@
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ComposedChart,
+  Area,
+  Line,
+  Bar,
 } from "recharts";
+import { motion } from "framer-motion";
 import type { SimulationResult } from "../types";
 
 interface Props {
@@ -16,88 +19,113 @@ interface Props {
 function ChartCard({
   title,
   children,
+  delay = 0,
 }: {
   title: string;
   children: React.ReactNode;
+  delay?: number;
 }) {
   return (
-    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-dim)] mb-3">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: "easeOut" }}
+      className="glass rounded-2xl p-5 hover:shadow-lg hover:shadow-primary/5 transition-shadow duration-300"
+    >
+      <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-4">
         {title}
       </h3>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
-function Table({
+function DataTable({
   columns,
   rows,
+  delay = 0,
 }: {
-  columns: string[];
+  columns: { key: string; label: string; mono?: boolean }[];
   rows: Record<string, unknown>[];
+  delay?: number;
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
-        <thead>
-          <tr className="border-b border-[var(--color-border)]">
-            {columns.map((col) => (
-              <th
-                key={col}
-                className="text-left py-2 px-2 text-[var(--color-text-muted)] font-medium uppercase tracking-wider"
-              >
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className="border-b border-[var(--color-border)]/50 hover:bg-[var(--color-bg-card-hover)]">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: "easeOut" }}
+      className="glass rounded-2xl p-5 overflow-hidden"
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full text-[11px]">
+          <thead>
+            <tr className="border-b border-border/50">
               {columns.map((col) => (
-                <td key={col} className="py-1.5 px-2 font-mono text-[var(--color-text)]">
-                  {typeof row[col] === "number"
-                    ? (row[col] as number).toFixed(row[col] === Math.round(row[col] as number) ? 0 : 2)
-                    : String(row[col] ?? "")}
-                </td>
+                <th
+                  key={col.key}
+                  className="text-left py-2.5 px-3 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60"
+                >
+                  {col.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr
+                key={i}
+                className="border-b border-border/30 hover:bg-white/[0.02] transition-colors"
+              >
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={`py-2 px-3 text-foreground/80 ${col.mono ? "font-mono tabular-nums" : ""}`}
+                  >
+                    {typeof row[col.key] === "number"
+                      ? (row[col.key] as number).toFixed(
+                          row[col.key] === Math.round(row[col.key] as number) ? 0 : 2
+                        )
+                      : String(row[col.key] ?? "")}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </motion.div>
   );
 }
 
 const tooltipStyle = {
   contentStyle: {
-    background: "#1e293b",
-    border: "1px solid #334155",
-    borderRadius: "8px",
-    fontSize: "12px",
-    color: "#f1f5f9",
+    background: "rgba(17, 24, 39, 0.95)",
+    border: "1px solid rgba(148, 163, 184, 0.1)",
+    borderRadius: "12px",
+    fontSize: "11px",
+    color: "#f9fafb",
+    backdropFilter: "blur(16px)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
   },
+  cursor: { stroke: "rgba(99, 102, 241, 0.3)", strokeWidth: 1 },
 };
 
 export default function ExecutionTab({ result }: Props) {
-  const quoteData = result.quote_history.map((q, i) => ({
+  const spreadData = result.quote_history.map((q, i) => ({
     t: q.timestamp ?? i,
     quoted_spread: (q.ask_price ?? 0) - (q.bid_price ?? 0),
+    lit_spread: result.book_snapshots[i]?.spread ?? 0,
     latency_delay: q.latency_delay_steps ?? 0,
   }));
 
-  const bookData = result.book_snapshots.map((s) => ({
-    t: s.timestamp,
-    lit_spread: s.spread ?? 0,
-  }));
-
-  const spreadData = quoteData.map((q, i) => ({
-    ...q,
-    lit_spread: bookData[i]?.lit_spread ?? 0,
-  }));
-
-  const fillColumns = ["timestamp", "maker_side", "price", "quantity", "maker_agent_id", "taker_agent_id"];
+  const fillColumns = [
+    { key: "timestamp", label: "Time", mono: true },
+    { key: "maker_side", label: "Side" },
+    { key: "price", label: "Price", mono: true },
+    { key: "quantity", label: "Qty", mono: true },
+    { key: "maker_agent_id", label: "Maker" },
+    { key: "taker_agent_id", label: "Taker" },
+  ];
   const fillRows = result.fills.slice(-20).map((f) => ({
     timestamp: f.timestamp,
     maker_side: f.maker_side,
@@ -107,7 +135,14 @@ export default function ExecutionTab({ result }: Props) {
     taker_agent_id: f.taker_agent_id,
   }));
 
-  const bookColumns = ["timestamp", "best_bid", "best_ask", "spread", "bid_depth", "ask_depth"];
+  const bookColumns = [
+    { key: "timestamp", label: "Time", mono: true },
+    { key: "best_bid", label: "Bid", mono: true },
+    { key: "best_ask", label: "Ask", mono: true },
+    { key: "spread", label: "Spread", mono: true },
+    { key: "bid_depth", label: "Bid Depth", mono: true },
+    { key: "ask_depth", label: "Ask Depth", mono: true },
+  ];
   const bookRows = result.book_snapshots.slice(-20).map((s) => ({
     timestamp: s.timestamp,
     best_bid: s.best_bid,
@@ -119,33 +154,29 @@ export default function ExecutionTab({ result }: Props) {
 
   return (
     <div className="space-y-4">
-      <ChartCard title="Spread & Latency">
+      <ChartCard title="Spread & Latency" delay={0}>
         <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={spreadData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="t" stroke="#64748b" tick={{ fontSize: 10 }} />
-            <YAxis stroke="#64748b" tick={{ fontSize: 10 }} />
+          <ComposedChart data={spreadData}>
+            <defs>
+              <linearGradient id="spreadGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.06)" />
+            <XAxis dataKey="t" stroke="transparent" tick={{ fontSize: 10, fill: "#64748b" }} />
+            <YAxis stroke="transparent" tick={{ fontSize: 10, fill: "#64748b" }} />
             <Tooltip {...tooltipStyle} />
-            <Line type="monotone" dataKey="quoted_spread" stroke="#3b82f6" dot={false} strokeWidth={1.5} name="Quoted Spread" />
+            <Area type="monotone" dataKey="quoted_spread" stroke="#6366f1" strokeWidth={1.5} fill="url(#spreadGrad)" dot={false} name="Quoted Spread" />
             <Line type="monotone" dataKey="lit_spread" stroke="#22c55e" dot={false} strokeWidth={1.5} name="Lit Spread" />
-            <Line type="monotone" dataKey="latency_delay" stroke="#ef4444" dot={false} strokeWidth={1.5} name="Latency Delay" />
-          </LineChart>
+            <Bar dataKey="latency_delay" fill="rgba(239, 68, 68, 0.3)" barSize={2} name="Latency" />
+          </ComposedChart>
         </ResponsiveContainer>
       </ChartCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-dim)] mb-3">
-            Recent Fills
-          </h3>
-          <Table columns={fillColumns} rows={fillRows} />
-        </div>
-        <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-dim)] mb-3">
-            Book Snapshots
-          </h3>
-          <Table columns={bookColumns} rows={bookRows} />
-        </div>
+        <DataTable columns={fillColumns} rows={fillRows} delay={0.05} />
+        <DataTable columns={bookColumns} rows={bookRows} delay={0.1} />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import type { SimulationResult } from "../types";
+import { motion } from "framer-motion";
 
 interface HeaderProps {
   result: SimulationResult;
@@ -8,32 +9,50 @@ interface HeaderProps {
 
 export default function Header({ result, selectedConfig, configHash }: HeaderProps) {
   const pills = [
-    { label: "strategy", value: result.agent_id },
-    { label: "config", value: selectedConfig },
-    { label: "seed", value: String(result.summary.seed ?? "") },
-    { label: "steps", value: String(result.equity_curve.length) },
-    { label: "hash", value: configHash },
+    { label: "strategy", value: result.agent_id, color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
+    { label: "config", value: selectedConfig, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
+    { label: "seed", value: String(result.summary.seed ?? ""), color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
+    { label: "steps", value: String(result.equity_curve.length), color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+    { label: "hash", value: configHash, color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
   ];
 
   return (
-    <div className="bg-gradient-to-r from-[#0f172a] to-[#1e293b] border border-[#1f2a44] rounded-xl px-6 py-5 mb-5">
-      <h1 className="text-xl font-bold text-white mb-1">
-        Market Making Research Terminal
-      </h1>
-      <p className="text-sm text-[var(--color-text-muted)] mb-3">
-        Strategy diagnostics, execution quality, risk, inventory, and accounting audit.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {pills.map((p) => (
-          <span
-            key={p.label}
-            className="inline-flex items-center gap-1.5 bg-[#17233a] border border-[#334155] text-[#d9e4f5] text-xs font-medium px-2.5 py-1 rounded-full"
-          >
-            <span className="text-[var(--color-text-dim)]">{p.label}:</span>
-            <span className="font-mono">{p.value}</span>
-          </span>
-        ))}
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="relative overflow-hidden rounded-2xl mb-6"
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-purple-600/5 to-transparent" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="relative glass-strong rounded-2xl px-6 py-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-foreground mb-1">
+              Market Making{" "}
+              <span className="gradient-text">Research Terminal</span>
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Strategy diagnostics, execution quality, risk, inventory & accounting audit
+            </p>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-slow shadow-lg shadow-emerald-400/50" />
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {pills.map((p) => (
+            <span
+              key={p.label}
+              className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg border ${p.color}`}
+            >
+              <span className="opacity-60">{p.label}</span>
+              <span className="font-mono">{p.value}</span>
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
