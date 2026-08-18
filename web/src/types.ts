@@ -93,3 +93,24 @@ export interface SimulationResult {
   benchmark: BenchmarkResult;
   config_hash: string;
 }
+
+export interface BinanceTrade {
+  timestamp: number;
+  price: number;
+  quantity: number;
+  is_buyer_maker: boolean;
+}
+
+export interface ComparisonResult {
+  real_trades: BinanceTrade[];
+  real_returns: number[];
+  real_volatility: number;
+  real_mean_spread_proxy: number;
+  sim_returns: number[];
+  sim_volatility: number;
+  sim_mean_spread_proxy: number;
+  correlation: number;
+  kolmogorov_smirnov_stat: number;
+  symbol: string;
+  real_trade_count: number;
+}

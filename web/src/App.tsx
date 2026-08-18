@@ -9,9 +9,10 @@ import OverviewTab from "./components/OverviewTab";
 import ExecutionTab from "./components/ExecutionTab";
 import RiskTab from "./components/RiskTab";
 import LedgerTab from "./components/LedgerTab";
+import ComparisonTab from "./components/ComparisonTab";
 import { Activity, AlertCircle, Zap } from "lucide-react";
 
-type Tab = "overview" | "execution" | "risk" | "ledger";
+type Tab = "overview" | "execution" | "risk" | "ledger" | "compare";
 
 export default function App() {
   const [configs, setConfigs] = useState<Record<string, SimulationConfig>>({});
@@ -107,6 +108,7 @@ export default function App() {
     { id: "execution", label: "Execution" },
     { id: "risk", label: "Risk" },
     { id: "ledger", label: "Ledger" },
+    { id: "compare", label: "vs Binance" },
   ];
 
   return (
@@ -188,6 +190,7 @@ export default function App() {
                     {activeTab === "execution" && <ExecutionTab result={result} />}
                     {activeTab === "risk" && <RiskTab result={result} />}
                     {activeTab === "ledger" && <LedgerTab result={result} />}
+                    {activeTab === "compare" && <ComparisonTab selectedConfig={selectedConfig} />}
                   </motion.div>
                 </AnimatePresence>
               </motion.div>

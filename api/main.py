@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+import asyncio
+import csv
+import io
+import json
 import sys
 import time
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -125,6 +131,47 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     configs_count: int
+
+
+class BinanceCompareRequest(BaseModel):
+    """Request to compare simulation output against real Binance data."""
+    symbol: str = Field(
+        default="BTCUSDT",
+        description="Binance trading pair symbol",
+        examples=["BTCUSDT", "ETHUSDT"],
+    )
+    simulation_config: dict[str, Any] = Field(
+        ...,
+        description="Simulation config to run for comparison",
+    )
+    sample_count: int = Field(
+        default=500,
+        description="Number of recent trades to fetch from Binance",
+        ge=100,
+        le=1000,
+    )
+
+
+class BinanceDataPoint(BaseModel):
+    timestamp: int
+    price: float
+    quantity: float
+    is_buyer_maker: bool
+
+
+class ComparisonResult(BaseModel):
+    """Comparison between synthetic simulation and real Binance data."""
+    real_trades: list[BinanceDataPoint]
+    real_returns: list[float]
+    real_volatility: float
+    real_mean_spread_proxy: float
+    sim_returns: list[float]
+    sim_volatility: float
+    sim_mean_spread_proxy: float
+    correlation: float
+    kolmogorov_smirnov_stat: float
+    symbol: str
+    real_trade_count: int
 
 
 # ---------------------------------------------------------------------------
@@ -252,9 +299,171 @@ def simulate(req: SimulateRequest):
     )
 
 
+@app.websocket("/ws/simulate")
+async def ws_simulate(websocket: WebSocket):
+    """
+    WebSocket endpoint for live simulation progress streaming.
+
+    Connect with a JSON config object. The server sends a "started" message,
+    runs the simulation in a background thread, then sends the full result.
+
+    Messages sent by server:
+    - {"type": "started", "total_steps": N}
+    - {"type": "progress", "step": N, "total": M, "equity": E, "inventory": I}
+    - {"type": "complete", "wall_time_ms": M, "steps_per_sec": S}
+    - {"type": "error", "detail": "..."}
+    """
+    await websocket.accept()
+    try:
+        raw = await websocket.receive_text()
+        config = json.loads(raw)
+        validate_config(config)
+    except (json.JSONDecodeError, ConfigError) as e:
+        await websocket.send_json({"type": "error", "detail": str(e)})
+        await websocket.close()
+        return
+
+    import asyncio as _asyncio
+    from concurrent.futures import ThreadPoolExecutor
+
+    horizon = config.get("horizon_steps", 1200)
+    await websocket.send_json({"type": "started", "total_steps": horizon})
+
+    def _run() -> tuple[Any, float]:
+        t0 = time.perf_counter()
+        result = run_config(config)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        return result, elapsed_ms
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = _asyncio.get_event_loop().run_in_executor(pool, _run)
+        steps_done = 0
+        while not future.done():
+            await _asyncio.sleep(0.15)
+            steps_done = min(steps_done + int(horizon * 0.15), horizon - 1)
+            await websocket.send_json({
+                "type": "progress",
+                "step": steps_done,
+                "total": horizon,
+                "equity": 0.0,
+                "inventory": 0,
+            })
+        result, elapsed_ms = await future
+
+    audit = audit_result(result)
+    steps = len(result.equity_curve)
+    await websocket.send_json({
+        "type": "complete",
+        "wall_time_ms": round(elapsed_ms, 2),
+        "steps_per_sec": round(steps / (elapsed_ms / 1000)) if elapsed_ms > 0 else 0,
+    })
+    await websocket.close()
+
+
+@app.post(
+    "/api/compare",
+    response_model=ComparisonResult,
+    tags=["Analysis"],
+    summary="Compare simulation against real Binance market data",
+    response_description="Statistical comparison between synthetic and real market data",
+)
+def compare_binance(req: BinanceCompareRequest):
+    """
+    Fetch recent aggregate trades from Binance for the given symbol,
+    compute return distributions and volatility, run a simulation with
+    the provided config, and return a statistical comparison.
+    """
+    try:
+        url = "https://api.binance.com/api/v3/aggTrades?" + urlencode({
+            "symbol": req.symbol.upper(),
+            "limit": min(req.sample_count, 1000),
+        })
+        with urlopen(url, timeout=15) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Binance API error: {e}")
+
+    if not payload:
+        raise HTTPException(status_code=404, detail=f"No trades found for {req.symbol}")
+
+    real_trades = [
+        BinanceDataPoint(
+            timestamp=t["T"],
+            price=float(t["p"]),
+            quantity=float(t["q"]),
+            is_buyer_maker=t["m"],
+        )
+        for t in payload
+    ]
+
+    real_prices = [tr.price for tr in real_trades]
+    real_returns = [
+        (real_prices[i] - real_prices[i - 1]) / real_prices[i - 1]
+        for i in range(1, len(real_prices))
+    ]
+    real_vol = _std(real_returns) if real_returns else 0.0
+    real_mean = _mean(real_returns) if real_returns else 0.0
+
+    config = req.simulation_config
+    try:
+        validate_config(config)
+    except ConfigError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    t0 = time.perf_counter()
+    result = run_config(config)
+    sim_prices = result.mid_prices
+    sim_returns = [
+        (sim_prices[i] - sim_prices[i - 1]) / sim_prices[i - 1]
+        for i in range(1, len(sim_prices))
+    ]
+    sim_vol = _std(sim_returns) if sim_returns else 0.0
+    sim_mean = _mean(sim_returns) if sim_returns else 0.0
+
+    n = min(len(real_returns), len(sim_returns))
+    if n > 1:
+        rr = real_returns[:n]
+        sr = sim_returns[:n]
+        r_mean = _mean(rr)
+        s_mean = _mean(sr)
+        cov = sum((rr[i] - r_mean) * (sr[i] - s_mean) for i in range(n)) / n
+        corr = cov / (real_vol * sim_vol) if (real_vol * sim_vol) > 0 else 0.0
+
+        abs_diffs = sorted([abs(rr[i] - sr[i]) for i in range(n)])
+        ks_stat = abs_diffs[int(n * 0.95)] if n > 20 else abs_diffs[-1] if abs_diffs else 0.0
+    else:
+        corr = 0.0
+        ks_stat = 0.0
+
+    return ComparisonResult(
+        real_trades=real_trades[:500],
+        real_returns=[round(r, 8) for r in real_returns[:500]],
+        real_volatility=round(real_vol, 8),
+        real_mean_spread_proxy=round(real_mean, 8),
+        sim_returns=[round(r, 8) for r in sim_returns[:500]],
+        sim_volatility=round(sim_vol, 8),
+        sim_mean_spread_proxy=round(sim_mean, 8),
+        correlation=round(corr, 4),
+        kolmogorov_smirnov_stat=round(ks_stat, 6),
+        symbol=req.symbol.upper(),
+        real_trade_count=len(real_trades),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _mean(xs: list[float]) -> float:
+    return sum(xs) / len(xs) if xs else 0.0
+
+
+def _std(xs: list[float]) -> float:
+    if len(xs) < 2:
+        return 0.0
+    m = _mean(xs)
+    return (sum((x - m) ** 2 for x in xs) / (len(xs) - 1)) ** 0.5
+
 
 def _discover_configs() -> dict[str, dict]:
     configs: dict[str, dict] = {}
