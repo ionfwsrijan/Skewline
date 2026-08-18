@@ -69,6 +69,13 @@ export interface AuditResult {
   event_count: number;
 }
 
+export interface BenchmarkResult {
+  wall_time_ms: number;
+  steps_per_sec: number;
+  fills_count: number;
+  events_count: number;
+}
+
 export interface SimulationResult {
   agent_id: string;
   equity_curve: number[];
@@ -83,5 +90,6 @@ export interface SimulationResult {
   accounting_events: Record<string, unknown>[];
   summary: Record<string, number | string | null>;
   audit: AuditResult;
+  benchmark: BenchmarkResult;
   config_hash: string;
 }
