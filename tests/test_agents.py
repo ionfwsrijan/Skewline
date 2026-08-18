@@ -1,7 +1,8 @@
 from agents.base_agent import AgentContext
 from agents.factory import build_agent
 from agents.rl_agent import TabularRLAgent
-from agents.rl_training import train_tabular_agent
+from agents.dqn_agent import DQNAgent
+from agents.rl_training import train_tabular_agent, train_dqn_agent
 from config import deep_merge, load_validated_config
 from order_flow.noise_traders import MarketOrder
 
@@ -25,6 +26,7 @@ def test_all_configured_agents_emit_valid_non_crossing_quotes():
         {"type": "glft"},
         {"type": "flow_imbalance"},
         {"type": "rl", "epsilon": 0.0},
+        {"type": "dqn"},
         {"type": "hedged_multi_asset"},
     ]
 
@@ -60,3 +62,26 @@ def test_tabular_rl_training_saves_and_loads_policy(tmp_path):
     assert policy_path.exists()
     assert results
     assert loaded.q_values == agent.q_values
+
+
+def test_dqn_agent_quote_and_learn():
+    agent = DQNAgent(seed=42)
+    q = agent.quote(context())
+    assert q.bid_price < 100.0
+    assert q.ask_price > 100.0
+    agent.learn(100.0, 0, 0.2)
+    q2 = agent.quote(context(inventory=5))
+    assert q2.bid_price < 100.0
+    assert q2.ask_price > 100.0
+
+
+def test_dqn_training_saves_and_loads(tmp_path):
+    config = deep_merge(
+        load_validated_config("configs/dqn_agent.yaml"),
+        {"horizon_steps": 30, "external_lob": {"quantity": 3, "levels": 2}},
+    )
+    path = tmp_path / "dqn_policy.json"
+    agent, results = train_dqn_agent(config, episodes=2, output_path=path)
+    assert path.exists()
+    assert results
+    assert isinstance(agent, DQNAgent)

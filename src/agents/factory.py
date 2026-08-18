@@ -8,6 +8,7 @@ from agents.glft import GLFTAgent
 from agents.hedged_multi_asset_agent import HedgedMultiAssetAgent
 from agents.naive_fixed_spread import NaiveFixedSpreadAgent
 from agents.rl_agent import TabularRLAgent
+from agents.dqn_agent import DQNAgent
 
 
 def build_agent(config: dict[str, Any]):
@@ -19,6 +20,7 @@ def build_agent(config: dict[str, Any]):
         "glft": GLFTAgent,
         "flow_imbalance": FlowImbalanceAgent,
         "rl": TabularRLAgent,
+        "dqn": DQNAgent,
         "hedged_multi_asset": HedgedMultiAssetAgent,
     }
     if agent_type not in mapping:
