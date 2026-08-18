@@ -22,6 +22,9 @@
   --color-ring: #6366f1;
   --color-sidebar: rgba(3, 7, 18, 0.95);
   --color-sidebar-border: rgba(148, 163, 184, 0.08);
+  --color-emerald: #22c55e;
+  --color-amber: #f59e0b;
+  --color-cyan: #06b6d4;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
   --radius: 0.75rem;
@@ -65,6 +68,19 @@
     border-right: 1px solid rgba(148, 163, 184, 0.06);
   }
 
+  .mesh-bg {
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 60% at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 80% at 60% 80%, rgba(6, 182, 212, 0.04) 0%, transparent 50%),
+      var(--color-background);
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(circle, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
   .glow-indigo {
     box-shadow: 0 0 40px rgba(99, 102, 241, 0.15), 0 0 80px rgba(99, 102, 241, 0.05);
   }
@@ -78,7 +94,7 @@
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #818cf8, #6366f1, #4f46e5);
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 40%, #a78bfa 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -108,7 +124,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(99, 102, 241, 0.05));
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.2));
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
     -webkit-mask-composite: xor;
@@ -126,6 +142,14 @@
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+
+  .animate-shimmer {
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 @keyframes fadeIn {
@@ -136,4 +160,9 @@
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }

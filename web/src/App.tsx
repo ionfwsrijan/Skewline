@@ -9,7 +9,7 @@ import OverviewTab from "./components/OverviewTab";
 import ExecutionTab from "./components/ExecutionTab";
 import RiskTab from "./components/RiskTab";
 import LedgerTab from "./components/LedgerTab";
-import { Activity, AlertCircle } from "lucide-react";
+import { Activity, AlertCircle, Zap } from "lucide-react";
 
 type Tab = "overview" | "execution" | "risk" | "ledger";
 
@@ -122,7 +122,7 @@ export default function App() {
         configsLoading={configsLoading}
       />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto mesh-bg dot-grid">
         <div className="max-w-[1600px] mx-auto px-6 py-5">
           <AnimatePresence mode="wait">
             {result ? (
@@ -199,14 +199,14 @@ export default function App() {
                 exit={{ opacity: 0 }}
                 className="flex items-center justify-center h-[60vh]"
               >
-                <div className="text-center max-w-md">
+                <div className="text-center max-w-lg">
                   {loading ? (
                     <div className="flex flex-col items-center gap-5">
                       <div className="relative">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-                          <Activity className="w-8 h-8 text-primary animate-pulse" />
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center gradient-border">
+                          <Activity className="w-9 h-9 text-primary animate-pulse" />
                         </div>
-                        <div className="absolute inset-0 rounded-2xl border border-primary/20 animate-ping opacity-20" />
+                        <div className="absolute inset-0 rounded-2xl border border-primary/10 animate-ping opacity-20" />
                       </div>
                       <div>
                         <p className="text-foreground font-semibold text-lg">Running simulation</p>
@@ -214,28 +214,29 @@ export default function App() {
                           Processing {config?.horizon_steps ?? "\u2026"} steps
                         </p>
                       </div>
-                      <div className="w-48 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="w-56 h-1.5 bg-muted rounded-full overflow-hidden">
                         <motion.div
-                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                          className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 rounded-full"
                           initial={{ width: "0%" }}
                           animate={{ width: "100%" }}
                           transition={{ duration: 3, ease: "easeInOut" }}
                         />
                       </div>
+                      <p className="text-[10px] text-muted-foreground/40 font-mono">this may take a moment</p>
                     </div>
                   ) : error ? (
                     <div className="flex flex-col items-center gap-4">
-                      <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center glow-red">
+                      <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center glow-red gradient-border">
                         <AlertCircle className="w-8 h-8 text-red-400" />
                       </div>
                       <div>
-                        <p className="text-red-400 font-medium">{error}</p>
-                        <p className="text-muted-foreground text-xs mt-2">
-                          Start the API with:{" "}
-                          <code className="glass px-2 py-1 rounded-lg text-[11px] font-mono text-foreground/80">
-                            py -m uvicorn api.main:app --port 8000
-                          </code>
+                        <p className="text-red-400 font-medium text-lg">{error}</p>
+                        <p className="text-muted-foreground text-sm mt-2">
+                          Start the API server first:
                         </p>
+                        <code className="inline-block mt-2 glass px-3 py-1.5 rounded-xl text-xs font-mono text-foreground/80">
+                          py -m uvicorn api.main:app --port 8000
+                        </code>
                       </div>
                     </div>
                   ) : configsLoading ? (
@@ -247,32 +248,44 @@ export default function App() {
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5 }}
-                      className="flex flex-col items-center gap-5"
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      className="flex flex-col items-center gap-6"
                     >
                       <div className="relative">
-                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-indigo-500/30">
-                          <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-indigo-500/30">
+                          <svg className="w-12 h-12 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M7 16l4-8 4 4 4-10" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </div>
-                        <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl" />
+                        <div className="absolute -inset-8 bg-gradient-to-r from-indigo-500/20 via-purple-500/10 to-indigo-500/20 rounded-[2rem] blur-2xl animate-pulse-slow" />
                       </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-foreground mb-2">
-                          <span className="gradient-text">Skewline</span>{" "}
-                          Research Terminal
-                        </h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          Select a strategy, adjust parameters, and run to see diagnostics.
+
+                      <div className="space-y-2 text-center">
+                        <h1 className="text-3xl font-bold text-foreground tracking-tight">
+                          <span className="gradient-text">Skewline</span>
+                        </h1>
+                        <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
+                          Research-grade market-making simulator with strategy diagnostics,
+                          execution quality analysis, and accounting audits.
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground/60">
-                        <kbd className="glass px-2.5 py-1 rounded-lg font-mono text-foreground/60 border border-border/50">
-                          Ctrl+Enter
-                        </kbd>
-                        <span>to run</span>
+
+                      <div className="flex items-center gap-6 text-xs text-muted-foreground/60">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-3.5 h-3.5 text-amber-500/60" />
+                          <span>6 strategies</span>
+                        </div>
+                        <div className="w-px h-3 bg-border" />
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-3.5 h-3.5 text-indigo-500/60" />
+                          <span>Real-time analytics</span>
+                        </div>
+                        <div className="w-px h-3 bg-border" />
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] bg-primary/10 text-primary/60 px-1.5 py-0.5 rounded">Ctrl+Enter</span>
+                          <span>to run</span>
+                        </div>
                       </div>
                     </motion.div>
                   )}

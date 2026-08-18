@@ -76,17 +76,25 @@ export default function Sidebar({
   return (
     <aside className="w-80 glass-sidebar flex flex-col h-screen shrink-0">
       <div className="px-5 py-6 border-b border-border/50">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M7 16l4-8 4 4 4-10" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3v18h18" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 16l4-8 4 4 4-10" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div className="absolute -inset-1 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-xl blur-sm -z-10" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-foreground tracking-tight">Skewline</h1>
+              <p className="text-[10px] text-muted-foreground font-medium">Market Making Research</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-foreground tracking-tight">Skewline</h1>
-            <p className="text-[10px] text-muted-foreground font-medium">Market Making Research</p>
-          </div>
+          <span className="text-[9px] font-mono font-bold text-muted-foreground/30 bg-muted/50 px-1.5 py-0.5 rounded">
+            v1.0
+          </span>
         </div>
       </div>
 

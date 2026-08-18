@@ -66,11 +66,11 @@ export default function OverviewTab({ result }: Props) {
   });
 
   const breakdownData = [
-    { component: "Spread", value: Number(result.summary.spread_capture), fill: "#6366f1" },
-    { component: "Inventory", value: Number(result.summary.inventory_mark_to_market), fill: "#8b5cf6" },
-    { component: "Adverse Sel.", value: Number(result.summary.adverse_selection), fill: "#ef4444" },
-    { component: "Fees", value: Number(result.summary.fees_and_rebates), fill: "#f59e0b" },
-    { component: "Hedge", value: Number(result.summary.hedge_value) || 0, fill: "#06b6d4" },
+    { component: "Spread", value: Number(result.summary.spread_capture), fill: "#818cf8" },
+    { component: "Inventory", value: Number(result.summary.inventory_mark_to_market), fill: "#a78bfa" },
+    { component: "Adverse Sel.", value: Number(result.summary.adverse_selection), fill: "#f87171" },
+    { component: "Fees", value: Number(result.summary.fees_and_rebates), fill: "#fbbf24" },
+    { component: "Hedge", value: Number(result.summary.hedge_value) || 0, fill: "#22d3ee" },
   ];
 
   return (

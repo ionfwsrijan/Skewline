@@ -22,16 +22,18 @@ export default function MetricCard({ label, value, positive, delay = 0 }: Metric
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay, ease: "easeOut" }}
       className={cn(
-        "glass rounded-xl px-4 py-3.5 group hover:scale-[1.02] transition-all duration-200",
-        "hover:shadow-lg hover:shadow-primary/5",
-        positive === true && "hover:shadow-emerald-500/10",
-        positive === false && "hover:shadow-red-500/10",
+        "relative glass rounded-xl px-4 py-3.5 group transition-all duration-300",
+        "hover:scale-[1.02]",
+        positive === true && "hover:shadow-lg hover:shadow-emerald-500/10",
+        positive === false && "hover:shadow-lg hover:shadow-red-500/10",
+        !positive && positive !== false && "hover:shadow-lg hover:shadow-primary/5",
       )}
     >
-      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none gradient-border" />
+      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1.5">
         {label}
       </div>
-      <div className={cn("text-lg font-bold font-mono tabular-nums", colorClass)}>
+      <div className={cn("text-lg font-bold font-mono tabular-nums tracking-tight", colorClass)}>
         {value}
       </div>
     </motion.div>
