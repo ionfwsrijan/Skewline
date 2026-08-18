@@ -1,5 +1,6 @@
 import math
 
+import pytest
 from market.calibration import fit_price_process_from_prices, microstructure_stats
 from market.price_process import PriceProcessParams, simulate_jump_diffusion
 
@@ -28,5 +29,5 @@ def test_calibration_recovers_positive_volatility():
 def test_microstructure_stats_reports_spread_and_autocorr():
     stats = microstructure_stats([100, 101, 100.5, 102], [0.02, 0.03, 0.02, 0.04])
 
-    assert stats["mean_spread"] == 0.0275
+    assert stats["mean_spread"] == pytest.approx(0.0275)
     assert "return_autocorrelation_lag1" in stats
