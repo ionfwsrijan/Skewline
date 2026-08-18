@@ -261,8 +261,8 @@ export default function App() {
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold text-foreground mb-2">
-                          Market Making{" "}
-                          <span className="gradient-text">Research Terminal</span>
+                          <span className="gradient-text">Skewline</span>{" "}
+                          Research Terminal
                         </h2>
                         <p className="text-muted-foreground text-sm leading-relaxed">
                           Select a strategy, adjust parameters, and run to see diagnostics.

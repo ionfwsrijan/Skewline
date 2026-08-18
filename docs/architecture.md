@@ -1,6 +1,6 @@
 # Architecture
 
-MM Sim is organized as a flat `src/` Python project with small modules that map to
+Skewline is organized as a flat `src/` Python project with small modules that map to
 market-simulation concerns.
 
 ## Runtime Flow

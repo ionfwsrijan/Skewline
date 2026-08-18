@@ -84,7 +84,7 @@ export default function Sidebar({
             </svg>
           </div>
           <div>
-            <h1 className="text-sm font-bold text-foreground tracking-tight">MM Sim</h1>
+            <h1 className="text-sm font-bold text-foreground tracking-tight">Skewline</h1>
             <p className="text-[10px] text-muted-foreground font-medium">Market Making Research</p>
           </div>
         </div>

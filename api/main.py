@@ -17,7 +17,7 @@ from engine.simulation_engine import run_config
 from metrics.accounting_audit import audit_result
 
 
-app = FastAPI(title="MM Sim API", version="1.0.0")
+app = FastAPI(title="Skewline API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

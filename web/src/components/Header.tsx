@@ -29,8 +29,8 @@ export default function Header({ result, selectedConfig, configHash }: HeaderPro
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground mb-1">
-              Market Making{" "}
-              <span className="gradient-text">Research Terminal</span>
+              <span className="gradient-text">Skewline</span>{" "}
+              Research Terminal
             </h1>
             <p className="text-sm text-muted-foreground">
               Strategy diagnostics, execution quality, risk, inventory & accounting audit

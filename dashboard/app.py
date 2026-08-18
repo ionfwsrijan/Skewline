@@ -16,7 +16,7 @@ from engine.simulation_engine import run_config
 from metrics.accounting_audit import audit_result
 
 
-st.set_page_config(page_title="MM Sim Dashboard", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Skewline Dashboard", layout="wide", initial_sidebar_state="expanded")
 
 
 CSS = """
@@ -253,7 +253,7 @@ if not configs:
     st.stop()
 
 with st.sidebar:
-    st.markdown("### MM Sim")
+    st.markdown("### Skewline")
     selected = st.selectbox("Strategy", list(configs), index=list(configs).index("baseline_naive") if "baseline_naive" in configs else 0)
     config = deepcopy(load_config(configs[selected]))
 
