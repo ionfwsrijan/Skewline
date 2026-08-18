@@ -133,7 +133,7 @@ export default function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <Header result={result} selectedConfig={selectedConfig} configHash={result.config_hash} />
+                <Header result={result} selectedConfig={selectedConfig} />
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
                   <MetricCard label="P&L" value={fmt.money(Number(result.summary.total_pnl))} positive={Number(result.summary.total_pnl) >= 0} delay={0} />

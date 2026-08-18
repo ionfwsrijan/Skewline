@@ -4,10 +4,9 @@ import { motion } from "framer-motion";
 interface HeaderProps {
   result: SimulationResult;
   selectedConfig: string;
-  configHash: string;
 }
 
-export default function Header({ result, selectedConfig, configHash }: HeaderProps) {
+export default function Header({ result, selectedConfig }: HeaderProps) {
   const pills = [
     { label: "strategy", value: result.agent_id, color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
     { label: "config", value: selectedConfig, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
