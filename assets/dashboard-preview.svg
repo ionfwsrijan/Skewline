@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#0f0f2d"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" rx="16" fill="url(#bg)"/>
+  <rect x="0" y="0" width="280" height="700" rx="0" fill="rgba(15,15,40,0.8)"/>
+  <rect x="24" y="24" width="36" height="36" rx="10" fill="url(#accent)"/>
+  <text x="42" y="48" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="system-ui">S</text>
+  <text x="72" y="38" fill="white" font-size="14" font-weight="bold" font-family="system-ui">Skewline</text>
+  <text x="72" y="52" fill="rgba(255,255,255,0.4)" font-size="9" font-family="system-ui">Market Making Research</text>
+  <text x="24" y="90" fill="rgba(255,255,255,0.3)" font-size="9" font-weight="bold" font-family="system-ui" letter-spacing="1.5">STRATEGY</text>
+  <rect x="24" y="100" width="232" height="36" rx="10" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)"/>
+  <text x="36" y="123" fill="white" font-size="12" font-family="system-ui">baseline_naive</text>
+  <text x="24" y="165" fill="rgba(255,255,255,0.3)" font-size="9" font-weight="bold" font-family="system-ui" letter-spacing="1.5">RUN PARAMETERS</text>
+  <rect x="24" y="192" width="232" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+  <rect x="24" y="192" width="140" height="4" rx="2" fill="url(#accent)"/>
+  <circle cx="164" cy="194" r="6" fill="#6366f1" stroke="white" stroke-width="2"/>
+  <rect x="24" y="620" width="232" height="44" rx="12" fill="url(#accent)"/>
+  <text x="140" y="647" text-anchor="middle" fill="white" font-size="13" font-weight="bold" font-family="system-ui">Run Simulation</text>
+  <text x="310" y="48" fill="white" font-size="18" font-weight="bold" font-family="system-ui">Simulation Results</text>
+  <rect x="310" y="56" width="52" height="20" rx="6" fill="rgba(99,102,241,0.15)"/>
+  <text x="336" y="70" text-anchor="middle" fill="#818cf8" font-size="9" font-weight="bold" font-family="system-ui">NAIVE</text>
+  <g transform="translate(310, 90)">
+    <rect width="135" height="64" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="14" y="22" fill="rgba(255,255,255,0.4)" font-size="9" font-family="system-ui">P&amp;L</text>
+    <text x="14" y="48" fill="#10b981" font-size="22" font-weight="bold" font-family="system-ui">$247.52</text>
+  </g>
+  <g transform="translate(455, 90)">
+    <rect width="135" height="64" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="14" y="22" fill="rgba(255,255,255,0.4)" font-size="9" font-family="system-ui">SHARPE</text>
+    <text x="14" y="48" fill="#10b981" font-size="22" font-weight="bold" font-family="system-ui">1.84</text>
+  </g>
+  <g transform="translate(600, 90)">
+    <rect width="135" height="64" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="14" y="22" fill="rgba(255,255,255,0.4)" font-size="9" font-family="system-ui">DRAWDOWN</text>
+    <text x="14" y="48" fill="#ef4444" font-size="22" font-weight="bold" font-family="system-ui">-$89.21</text>
+  </g>
+  <g transform="translate(745, 90)">
+    <rect width="135" height="64" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <text x="14" y="22" fill="rgba(255,255,255,0.4)" font-size="9" font-family="system-ui">FILLS</text>
+    <text x="14" y="48" fill="white" font-size="22" font-weight="bold" font-family="system-ui">342</text>
+  </g>
+  <rect x="310" y="180" width="540" height="260" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+  <text x="326" y="206" fill="rgba(255,255,255,0.4)" font-size="10" font-weight="bold" font-family="system-ui">Equity Curve</text>
+  <polyline points="330,380 370,370 410,350 450,360 490,330 530,310 570,320 610,290 650,280 690,295 730,270 770,260 810,275 830,250" fill="none" stroke="#6366f1" stroke-width="2"/>
+  <rect x="870" y="180" width="280" height="260" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+  <text x="886" y="206" fill="rgba(255,255,255,0.4)" font-size="10" font-weight="bold" font-family="system-ui">Inventory</text>
+  <rect x="310" y="460" width="840" height="220" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+  <text x="326" y="486" fill="rgba(255,255,255,0.4)" font-size="10" font-weight="bold" font-family="system-ui">Mid Price</text>
+</svg>

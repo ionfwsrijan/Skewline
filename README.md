@@ -356,6 +356,14 @@ Python 3.11+ &nbsp;&middot;&nbsp; FastAPI &nbsp;&middot;&nbsp; React &nbsp;&midd
 
 <br />
 
+### Dashboard Preview
+
+> Replace the screenshot below with your own by running the dashboard and capturing the screen.
+
+![Skewline Dashboard](https://raw.githubusercontent.com/ionfwsrijan/Skewline/main/assets/dashboard-preview.png)
+
+<br />
+
 *Skewline is a research simulator, not a production trading system.*
 
 </div>
