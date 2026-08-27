@@ -1,16 +1,25 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SimulationConfig, SimulationResult } from "./types";
 import { fetchConfigs, runSimulation } from "./api";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
-import OverviewTab from "./components/OverviewTab";
-import ExecutionTab from "./components/ExecutionTab";
-import RiskTab from "./components/RiskTab";
-import LedgerTab from "./components/LedgerTab";
-import ComparisonTab from "./components/ComparisonTab";
 import { Activity, AlertCircle, Zap } from "lucide-react";
+
+const OverviewTab = lazy(() => import("./components/OverviewTab"));
+const ExecutionTab = lazy(() => import("./components/ExecutionTab"));
+const RiskTab = lazy(() => import("./components/RiskTab"));
+const LedgerTab = lazy(() => import("./components/LedgerTab"));
+const ComparisonTab = lazy(() => import("./components/ComparisonTab"));
+
+function TabLoader() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 type Tab = "overview" | "execution" | "risk" | "ledger" | "compare";
 
@@ -186,11 +195,13 @@ export default function App() {
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {activeTab === "overview" && <OverviewTab result={result} />}
-                    {activeTab === "execution" && <ExecutionTab result={result} />}
-                    {activeTab === "risk" && <RiskTab result={result} />}
-                    {activeTab === "ledger" && <LedgerTab result={result} />}
-                    {activeTab === "compare" && <ComparisonTab selectedConfig={selectedConfig} />}
+                    <Suspense fallback={<TabLoader />}>
+                      {activeTab === "overview" && <OverviewTab result={result} />}
+                      {activeTab === "execution" && <ExecutionTab result={result} />}
+                      {activeTab === "risk" && <RiskTab result={result} />}
+                      {activeTab === "ledger" && <LedgerTab result={result} />}
+                      {activeTab === "compare" && <ComparisonTab selectedConfig={selectedConfig} />}
+                    </Suspense>
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
