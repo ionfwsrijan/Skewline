@@ -5,7 +5,7 @@ import { fetchConfigs, runSimulation } from "./api";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
-import { Activity, AlertCircle, Zap } from "lucide-react";
+import { Activity, AlertCircle, Zap, Menu } from "lucide-react";
 
 const OverviewTab = lazy(() => import("./components/OverviewTab"));
 const ExecutionTab = lazy(() => import("./components/ExecutionTab"));
@@ -32,6 +32,7 @@ export default function App() {
   const [configsLoading, setConfigsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     setConfigsLoading(true);
@@ -122,19 +123,44 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        configs={configs}
-        selectedConfig={selectedConfig}
-        config={config}
-        onConfigChange={handleConfigChange}
-        onParamChange={handleParamChange}
-        onRun={handleRun}
-        loading={loading}
-        configsLoading={configsLoading}
-      />
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      <main className="flex-1 overflow-y-auto mesh-bg dot-grid">
-        <div className="max-w-[1600px] mx-auto px-6 py-5">
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}>
+        <Sidebar
+          configs={configs}
+          selectedConfig={selectedConfig}
+          config={config}
+          onConfigChange={(name) => { handleConfigChange(name); setSidebarOpen(false); }}
+          onParamChange={handleParamChange}
+          onRun={() => { handleRun(); setSidebarOpen(false); }}
+          loading={loading}
+          configsLoading={configsLoading}
+        />
+      </div>
+
+      <main className="flex-1 overflow-y-auto mesh-bg dot-grid min-w-0">
+        {/* Mobile top bar */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border/50">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg glass border border-border/50 text-foreground"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <h1 className="text-sm font-bold text-foreground">Skewline</h1>
+        </div>
+
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-5">
           <AnimatePresence mode="wait">
             {result ? (
               <motion.div
@@ -164,7 +190,7 @@ export default function App() {
                   <MetricCard label="Maker Ratio" value={fmt.pct(Number(result.summary.maker_fill_ratio))} delay={0.22} />
                 </div>
 
-                <div className="flex gap-1 mb-5 border-b border-border/50">
+                <div className="flex gap-1 mb-5 border-b border-border/50 overflow-x-auto scrollbar-none">
                   {tabs.map((t) => (
                     <button
                       key={t.id}

@@ -150,6 +150,14 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fadeIn {
@@ -165,4 +173,14 @@
 @keyframes shimmer {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .mesh-bg {
+    background: linear-gradient(135deg, #030712 0%, #0a0a1a 100%) !important;
+  }
+
+  .dot-grid {
+    background-image: none !important;
+  }
 }
