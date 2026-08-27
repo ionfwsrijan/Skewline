@@ -4,6 +4,7 @@ import asyncio
 import csv
 import io
 import json
+import logging
 import sys
 import time
 from copy import deepcopy
@@ -15,7 +16,7 @@ from urllib.request import urlopen
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -23,6 +24,7 @@ from config import config_hash, load_config, validate_config, ConfigError
 from engine.simulation_engine import run_config
 from metrics.accounting_audit import audit_result
 
+logger = logging.getLogger("skewline.api")
 
 app = FastAPI(
     title="Skewline API",
@@ -40,6 +42,32 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log method, path, status code, and response time for every HTTP request."""
+    start = time.perf_counter()
+    response = await call_next(request)
+    elapsed_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "%s %s -> %d (%.1fms)",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed_ms,
+    )
+    return response
+
+
+@app.on_event("startup")
+def configure_logging():
+    """Set up structured logging on server start."""
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
 
 # ---------------------------------------------------------------------------
