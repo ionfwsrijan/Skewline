@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel, Field
 
 from config import config_hash, load_config, validate_config, ConfigError
@@ -30,9 +31,14 @@ app = FastAPI(
     title="Skewline API",
     description="REST API for the Skewline market-making research simulator. "
     "Run simulations with configurable strategies, risk controls, and market conditions.",
-    version="1.0.0",
+    version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+)
+
+app.add_middleware(
+    GZipMiddleware,
+    minimum_size=512,
 )
 
 app.add_middleware(
@@ -42,6 +48,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# LRU cache of simulation results keyed by config_hash.
+_RESULT_CACHE: dict[str, tuple[float, Any]] = {}
+_CACHE_MAX = 32
+
+
+def _cache_get(hash: str) -> Any | None:
+    entry = _RESULT_CACHE.get(hash)
+    if entry is None:
+        return None
+    _RESULT_CACHE[hash] = entry  # touch for LRU recency
+    return entry
+
+
+def _cache_put(hash: str, result: Any) -> None:
+    _RESULT_CACHE[hash] = (time.time(), result)
+    if len(_RESULT_CACHE) > _CACHE_MAX:
+        # Evict the least recently used entry.
+        oldest_key = min(_RESULT_CACHE, key=lambda k: _RESULT_CACHE[k][0])
+        del _RESULT_CACHE[oldest_key]
 
 
 @app.middleware("http")
@@ -76,6 +102,10 @@ def configure_logging():
 
 class SimulateRequest(BaseModel):
     """Configuration for a market-making simulation run."""
+    use_cache: bool = Field(
+        default=True,
+        description="Return a cached result if the same config hash was already simulated",
+    )
     config: dict[str, Any] = Field(
         ...,
         description="Full simulation config (seed, horizon_steps, price_process, agent, risk, etc.)",
@@ -145,6 +175,7 @@ class SimulateResponse(BaseModel):
     audit: AuditModel
     benchmark: BenchmarkModel
     config_hash: str
+    cached: bool = Field(description="True if the result was served from the internal cache")
 
 
 class ConfigSummary(BaseModel):
@@ -215,7 +246,33 @@ class ComparisonResult(BaseModel):
 def health_check():
     """Returns API status, version, and number of available configs."""
     configs = _discover_configs()
-    return HealthResponse(status="ok", version="1.0.0", configs_count=len(configs))
+    return HealthResponse(status="ok", version="1.1.0", configs_count=len(configs))
+
+
+@app.get(
+    "/api/cache",
+    response_model=dict[str, Any],
+    tags=["System"],
+    summary="Simulation result cache stats",
+)
+def cache_stats():
+    """Return current in-memory simulation result cache statistics."""
+    return {
+        "size": len(_RESULT_CACHE),
+        "max_size": _CACHE_MAX,
+        "keys": sorted(_RESULT_CACHE.keys()),
+    }
+
+
+@app.delete(
+    "/api/cache",
+    tags=["System"],
+    summary="Clear the simulation result cache",
+)
+def clear_cache():
+    """Clear all cached simulation results."""
+    _RESULT_CACHE.clear()
+    return {"cleared": True}
 
 
 @app.get(
@@ -269,6 +326,11 @@ def simulate(req: SimulateRequest):
     except ConfigError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
+    hash = config_hash(config)
+    cached_entry = _cache_get(hash) if req.use_cache else None
+    if cached_entry is not None:
+        return cached_entry[1].model_copy(update={"cached": True})
+
     t0 = time.perf_counter()
     result = run_config(config)
     elapsed_ms = (time.perf_counter() - t0) * 1000
@@ -276,7 +338,7 @@ def simulate(req: SimulateRequest):
     audit = audit_result(result)
     steps = len(result.equity_curve)
 
-    return SimulateResponse(
+    response = SimulateResponse(
         agent_id=result.agent_id,
         equity_curve=result.equity_curve,
         inventory_curve=result.inventory_curve,
@@ -323,8 +385,11 @@ def simulate(req: SimulateRequest):
             fills_count=len(result.fills),
             events_count=len(result.accounting_events),
         ),
-        config_hash=config_hash(config),
+        config_hash=hash,
+        cached=False,
     )
+    _cache_put(hash, response)
+    return response
 
 
 @app.websocket("/ws/simulate")

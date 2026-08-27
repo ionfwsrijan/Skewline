@@ -29,11 +29,22 @@ function TabLoader() {
 
 type Tab = "overview" | "execution" | "risk" | "ledger" | "compare";
 
+const RESULT_STORAGE_KEY = "skewline-last-result";
+
+function loadStoredResult(): SimulationResult | null {
+  try {
+    const raw = sessionStorage.getItem(RESULT_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as SimulationResult) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [configs, setConfigs] = useState<Record<string, SimulationConfig>>({});
   const [selectedConfig, setSelectedConfig] = useState<string>("");
   const [config, setConfig] = useState<SimulationConfig | null>(null);
-  const [result, setResult] = useState<SimulationResult | null>(null);
+  const [result, setResult] = useState<SimulationResult | null>(loadStoredResult);
   const [loading, setLoading] = useState(false);
   const [configsLoading, setConfigsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +105,18 @@ export default function App() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   });
+
+  useEffect(() => {
+    try {
+      if (result) {
+        sessionStorage.setItem(RESULT_STORAGE_KEY, JSON.stringify(result));
+      } else {
+        sessionStorage.removeItem(RESULT_STORAGE_KEY);
+      }
+    } catch {
+      // ignore storage quota errors
+    }
+  }, [result]);
 
   useEffect(() => {
     return () => { wsRef.current?.close(); };

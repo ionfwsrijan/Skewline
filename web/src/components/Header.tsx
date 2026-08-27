@@ -64,10 +64,17 @@ export default function Header({ result, selectedConfig, onExport, onShare }: He
                 Export
               </button>
             )}
-            <div className="flex items-center gap-2 mt-1 glass px-2.5 py-1 rounded-lg">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-slow shadow-lg shadow-emerald-400/50" />
-              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Live</span>
-            </div>
+            {result.cached ? (
+              <div className="flex items-center gap-2 mt-1 glass px-2.5 py-1 rounded-lg" title="Result served from server cache (same config as a previous run)">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-widest">Cached</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mt-1 glass px-2.5 py-1 rounded-lg">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-slow shadow-lg shadow-emerald-400/50" />
+                <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Fresh</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
