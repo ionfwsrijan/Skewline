@@ -6,6 +6,8 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
 import { Activity, AlertCircle, Zap, Menu } from "lucide-react";
+import { useTheme } from "./hooks/useTheme";
+import ThemeToggle from "./components/ThemeToggle";
 
 const OverviewTab = lazy(() => import("./components/OverviewTab"));
 const ExecutionTab = lazy(() => import("./components/ExecutionTab"));
@@ -33,6 +35,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     setConfigsLoading(true);
@@ -148,7 +151,11 @@ export default function App() {
         />
       </div>
 
-      <main className="flex-1 overflow-y-auto mesh-bg dot-grid min-w-0">
+      <main className="flex-1 overflow-y-auto mesh-bg dot-grid min-w-0 relative">
+        {/* Desktop theme toggle */}
+        <div className="hidden lg:block fixed top-5 right-5 z-30">
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        </div>
         {/* Mobile top bar */}
         <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border/50">
           <button
@@ -158,6 +165,9 @@ export default function App() {
             <Menu className="w-5 h-5" />
           </button>
           <h1 className="text-sm font-bold text-foreground">Skewline</h1>
+          <div className="ml-auto">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          </div>
         </div>
 
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-5">

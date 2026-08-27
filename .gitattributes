@@ -1,0 +1,39 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare text files
+*.py text diff=python
+*.js text
+*.ts text
+*.tsx text
+*.css text
+*.html text
+*.json text
+*.yaml text
+*.yml text
+*.md text
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Declare binary files
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.svg text
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Docker
+Dockerfile text
+docker-compose.yml text
+.dockerignore text
+
+# Build outputs
+dist/ binary
+node_modules/ binary
+__pycache__/ binary
+*.pyc binary
