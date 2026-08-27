@@ -7,7 +7,9 @@ import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
 import { Activity, AlertCircle, Zap, Menu } from "lucide-react";
 import { useTheme } from "./hooks/useTheme";
+import { useSimulationHistory } from "./hooks/useSimulationHistory";
 import ThemeToggle from "./components/ThemeToggle";
+import { Clock, Trash2 } from "lucide-react";
 
 const OverviewTab = lazy(() => import("./components/OverviewTab"));
 const ExecutionTab = lazy(() => import("./components/ExecutionTab"));
@@ -36,6 +38,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { history, addEntry, clearHistory } = useSimulationHistory();
 
   useEffect(() => {
     setConfigsLoading(true);
@@ -58,6 +61,16 @@ export default function App() {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         handleRun();
+        return;
+      }
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const tabMap: Record<string, Tab> = { "1": "overview", "2": "execution", "3": "risk", "4": "ledger", "5": "compare" };
+      if (tabMap[e.key]) {
+        e.preventDefault();
+        setActiveTab(tabMap[e.key]);
+      }
+      if (e.key === "d" || e.key === "D") {
+        toggleTheme();
       }
     };
     window.addEventListener("keydown", handler);
@@ -98,6 +111,14 @@ export default function App() {
     try {
       const res = await runSimulation(config);
       setResult(res);
+      addEntry({
+        configName: selectedConfig,
+        agentType: ((config as unknown as Record<string, { type?: string }>)?.agent?.type) ?? selectedConfig,
+        totalPnl: Number(res.summary.total_pnl),
+        sharpe: Number(res.summary.sharpe),
+        maxDrawdown: Number(res.summary.max_drawdown),
+        steps: res.equity_curve.length,
+      });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Simulation failed");
     } finally {
@@ -337,6 +358,37 @@ export default function App() {
                           <span>to run</span>
                         </div>
                       </div>
+
+                      {history.length > 0 && (
+                        <div className="w-full max-w-sm mt-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-muted-foreground/60 flex items-center gap-1.5">
+                              <Clock className="w-3 h-3" />
+                              Recent runs
+                            </span>
+                            <button
+                              onClick={clearHistory}
+                              className="text-[10px] text-muted-foreground/40 hover:text-red-400 transition-colors flex items-center gap-1"
+                            >
+                              <Trash2 className="w-2.5 h-2.5" />
+                              clear
+                            </button>
+                          </div>
+                          <div className="space-y-1">
+                            {history.slice(0, 5).map((h) => (
+                              <div
+                                key={h.id}
+                                className="flex items-center justify-between text-[11px] px-3 py-1.5 rounded-lg glass border border-border/30"
+                              >
+                                <span className="text-foreground/70 font-medium">{h.configName}</span>
+                                <span className={`font-mono tabular-nums ${h.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                                  {h.totalPnl >= 0 ? "+" : ""}${h.totalPnl.toFixed(2)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </div>
