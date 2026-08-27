@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SimulationConfig, SimulationResult } from "./types";
 import { fetchConfigs, runSimulation } from "./api";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MetricCard from "./components/MetricCard";
+import ShortcutHelp from "./components/ShortcutHelp";
+import { exportSimulationCSV } from "./export";
 import { Activity, AlertCircle, Zap, Menu } from "lucide-react";
 import { useTheme } from "./hooks/useTheme";
 import { useSimulationHistory } from "./hooks/useSimulationHistory";
@@ -37,6 +39,9 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [shortcutOpen, setShortcutOpen] = useState(false);
+  const [wsProgress, setWsProgress] = useState<{ step: number; total: number } | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const { theme, toggleTheme } = useTheme();
   const { history, addEntry, clearHistory } = useSimulationHistory();
 
@@ -45,11 +50,17 @@ export default function App() {
     fetchConfigs()
       .then((c) => {
         setConfigs(c);
-        const names = Object.keys(c);
-        if (names.length > 0) {
-          const def = names.includes("baseline_naive") ? "baseline_naive" : names[0];
-          setSelectedConfig(def);
-          setConfig(c[def]);
+        const urlConfig = loadConfigFromURL();
+        if (urlConfig) {
+          setConfig(urlConfig);
+          setSelectedConfig(urlConfig.agent?.type ?? Object.keys(c)[0]);
+        } else {
+          const names = Object.keys(c);
+          if (names.length > 0) {
+            const def = names.includes("baseline_naive") ? "baseline_naive" : names[0];
+            setSelectedConfig(def);
+            setConfig(c[def]);
+          }
         }
       })
       .catch(() => setError("Failed to connect to API. Is the backend running?"))
@@ -72,10 +83,21 @@ export default function App() {
       if (e.key === "d" || e.key === "D") {
         toggleTheme();
       }
+      if (e.key === "?") {
+        setShortcutOpen(true);
+      }
+      if (e.key === "Escape") {
+        setShortcutOpen(false);
+        setSidebarOpen(false);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   });
+
+  useEffect(() => {
+    return () => { wsRef.current?.close(); };
+  }, []);
 
   const handleConfigChange = useCallback(
     (name: string) => {
@@ -108,6 +130,8 @@ export default function App() {
     if (!config || loading) return;
     setLoading(true);
     setError(null);
+    setWsProgress(null);
+
     try {
       const res = await runSimulation(config);
       setResult(res);
@@ -123,8 +147,27 @@ export default function App() {
       setError(e instanceof Error ? e.message : "Simulation failed");
     } finally {
       setLoading(false);
+      setWsProgress(null);
     }
-  }, [config, loading]);
+  }, [config, loading, selectedConfig, addEntry]);
+
+  const handleExport = useCallback(() => {
+    if (result) exportSimulationCSV(result);
+  }, [result]);
+
+  const handleShare = useCallback(() => {
+    if (!config) return;
+    try {
+      const encoded = btoa(JSON.stringify(config));
+      const url = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
+      navigator.clipboard.writeText(url).then(
+        () => {},
+        () => { window.prompt("Copy this link:", url); }
+      );
+    } catch {
+      // ignore
+    }
+  }, [config]);
 
   const fmt = {
     money: (v: number) => {
@@ -201,7 +244,7 @@ export default function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <Header result={result} selectedConfig={selectedConfig} />
+                <Header result={result} selectedConfig={selectedConfig} onExport={handleExport} onShare={handleShare} />
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-5">
                   <MetricCard label="P&L" value={fmt.money(Number(result.summary.total_pnl))} positive={Number(result.summary.total_pnl) >= 0} delay={0} />
@@ -282,7 +325,9 @@ export default function App() {
                       <div>
                         <p className="text-foreground font-semibold text-lg">Running simulation</p>
                         <p className="text-muted-foreground text-sm mt-1">
-                          Processing {config?.horizon_steps ?? "\u2026"} steps
+                          {wsProgress
+                            ? `Step ${wsProgress.step} / ${wsProgress.total}`
+                            : `Processing ${config?.horizon_steps ?? "\u2026"} steps`}
                         </p>
                       </div>
                       <div className="w-56 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -397,6 +442,18 @@ export default function App() {
           </AnimatePresence>
         </div>
       </main>
+      <ShortcutHelp open={shortcutOpen} onClose={() => setShortcutOpen(false)} />
     </div>
   );
+}
+
+function loadConfigFromURL(): SimulationConfig | null {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("config");
+    if (!raw) return null;
+    return JSON.parse(atob(raw)) as SimulationConfig;
+  } catch {
+    return null;
+  }
 }

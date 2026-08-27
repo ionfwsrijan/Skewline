@@ -1,12 +1,15 @@
 import type { SimulationResult } from "../types";
 import { motion } from "framer-motion";
+import { Download } from "lucide-react";
 
 interface HeaderProps {
   result: SimulationResult;
   selectedConfig: string;
+  onExport?: () => void;
+  onShare?: () => void;
 }
 
-export default function Header({ result, selectedConfig }: HeaderProps) {
+export default function Header({ result, selectedConfig, onExport, onShare }: HeaderProps) {
   const pills = [
     { label: "strategy", value: result.agent_id, color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
     { label: "config", value: selectedConfig, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
@@ -37,9 +40,34 @@ export default function Header({ result, selectedConfig }: HeaderProps) {
               Strategy diagnostics, execution quality, risk, inventory & accounting audit
             </p>
           </div>
-          <div className="flex items-center gap-2 mt-1 glass px-2.5 py-1 rounded-lg">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-slow shadow-lg shadow-emerald-400/50" />
-            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Live</span>
+          <div className="flex items-center gap-2">
+            {onShare && (
+              <button
+                onClick={onShare}
+                className="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-border/50 glass text-muted-foreground hover:text-foreground transition-colors"
+                title="Copy shareable link"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" strokeLinecap="round" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" strokeLinecap="round" />
+                </svg>
+                Share
+              </button>
+            )}
+            {onExport && (
+              <button
+                onClick={onExport}
+                className="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-border/50 glass text-muted-foreground hover:text-foreground transition-colors"
+                title="Export as CSV"
+              >
+                <Download className="w-3 h-3" />
+                Export
+              </button>
+            )}
+            <div className="flex items-center gap-2 mt-1 glass px-2.5 py-1 rounded-lg">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-slow shadow-lg shadow-emerald-400/50" />
+              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Live</span>
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-4">
