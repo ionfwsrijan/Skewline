@@ -402,6 +402,14 @@ export default function App() {
                           <span className="font-mono text-[10px] bg-primary/10 text-primary/60 px-1.5 py-0.5 rounded">Ctrl+Enter</span>
                           <span>to run</span>
                         </div>
+                        <div className="w-px h-3 bg-border" />
+                        <button
+                          onClick={() => setShortcutOpen(true)}
+                          className="flex items-center gap-1.5 hover:text-foreground/60 transition-colors"
+                        >
+                          <span className="font-mono text-[10px] bg-primary/10 text-primary/60 px-1.5 py-0.5 rounded">?</span>
+                          <span>shortcuts</span>
+                        </button>
                       </div>
 
                       {history.length > 0 && (
