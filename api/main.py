@@ -16,6 +16,8 @@ from urllib.request import urlopen
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+_APP_START = time.time()
+
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -190,6 +192,15 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     configs_count: int
+    uptime_seconds: int
+
+
+class RootResponse(BaseModel):
+    name: str
+    description: str
+    version: str
+    docs: str
+    endpoints: list[str]
 
 
 class BinanceCompareRequest(BaseModel):
@@ -238,6 +249,25 @@ class ComparisonResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 @app.get(
+    "/",
+    response_model=RootResponse,
+    tags=["System"],
+    summary="API info",
+    include_in_schema=False,
+)
+def root():
+    """Returns API name, version, documentation link, and available endpoints."""
+    endpoints = sorted({route.path for route in app.routes if route.path.startswith("/api/")})
+    return RootResponse(
+        name="Skewline Simulation API",
+        description="Market-making simulation, risk diagnostics, and strategy backtesting.",
+        version="1.1.0",
+        docs="/docs",
+        endpoints=endpoints,
+    )
+
+
+@app.get(
     "/api/health",
     response_model=HealthResponse,
     tags=["System"],
@@ -246,7 +276,12 @@ class ComparisonResult(BaseModel):
 def health_check():
     """Returns API status, version, and number of available configs."""
     configs = _discover_configs()
-    return HealthResponse(status="ok", version="1.1.0", configs_count=len(configs))
+    return HealthResponse(
+        status="ok",
+        version="1.1.0",
+        configs_count=len(configs),
+        uptime_seconds=int(time.time() - _APP_START),
+    )
 
 
 @app.get(
