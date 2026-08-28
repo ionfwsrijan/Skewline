@@ -157,7 +157,7 @@ export default function App() {
 
     try {
       const res = await runSimulation(config);
-      setResult(res);
+      setResult({ ...res, ran_at: new Date().toISOString() });
       addEntry({
         configName: selectedConfig,
         agentType: ((config as unknown as Record<string, { type?: string }>)?.agent?.type) ?? selectedConfig,

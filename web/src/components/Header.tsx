@@ -1,6 +1,7 @@
 import type { SimulationResult } from "../types";
 import { motion } from "framer-motion";
-import { Download } from "lucide-react";
+import { Download, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 interface HeaderProps {
   result: SimulationResult;
@@ -10,6 +11,27 @@ interface HeaderProps {
 }
 
 export default function Header({ result, selectedConfig, onExport, onShare }: HeaderProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyJSON = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // ignore
+    }
+  };
+
+  const runAt = result.ran_at
+    ? new Date(result.ran_at).toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
   const pills = [
     { label: "strategy", value: result.agent_id, color: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" },
     { label: "config", value: selectedConfig, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
@@ -17,6 +39,9 @@ export default function Header({ result, selectedConfig, onExport, onShare }: He
     { label: "steps", value: String(result.equity_curve.length), color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
     { label: "time", value: `${result.benchmark.wall_time_ms.toFixed(0)}ms`, color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
     { label: "perf", value: `${(result.benchmark.steps_per_sec / 1000).toFixed(1)}k/s`, color: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+    ...(runAt ? [{ label: "ran",
+      value: runAt,
+      color: "bg-slate-500/10 text-slate-400 border-slate-500/20" as string }] : []),
   ];
 
   return (
@@ -64,6 +89,14 @@ export default function Header({ result, selectedConfig, onExport, onShare }: He
                 Export
               </button>
             )}
+            <button
+              onClick={handleCopyJSON}
+              className="flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1.5 rounded-lg border border-border/50 glass text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy full result as JSON"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              {copied ? "Copied" : "JSON"}
+            </button>
             {result.cached ? (
               <div className="flex items-center gap-2 mt-1 glass px-2.5 py-1 rounded-lg" title="Result served from server cache (same config as a previous run)">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />

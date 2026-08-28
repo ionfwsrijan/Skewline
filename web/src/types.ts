@@ -93,6 +93,7 @@ export interface SimulationResult {
   benchmark: BenchmarkResult;
   config_hash: string;
   cached?: boolean;
+  ran_at?: string;
 }
 
 export interface BinanceTrade {
